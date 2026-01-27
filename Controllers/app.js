@@ -198,55 +198,121 @@ const routes = {
         </form>
     `),
     'dispatch': () => renderForm('Dispatch', `
-        <form onsubmit="handleForm(event, 'DISPATCH')">
-            <p class="form-label">Aircraft Information</p>
-            <select name="aircraft" id="aircraft-type" required onchange="updateAircraftData()">
-                <option value="DA-40">DA-40</option>
-                <option value="DA-20">DA-20</option>
-                <option value="Sport Cruiser">Sport Cruiser</option>
-            </select>
-            <select name="tailNumber" id="tail-number" required>
-                <option value="745DS">745DS</option>
-                <option value="638DS">638DS</option>
-            </select>
-            <div class="wb-display">
-                <p>Empty Weight: <span id="empty-w">1767.97</span> lbs</p>
-                <p>Empty Arm: <span id="empty-a">99.12</span></p>
+    <form onsubmit="handleForm(event, 'DISPATCH')">
+        <p class="form-label">Aircraft Information</p>
+        <select name="aircraft" id="aircraft-type" required onchange="updateAircraftData()">
+            <option value="DA-40">DA-40</option>
+            <option value="DA-20">DA-20</option>
+            <option value="Sportcruiser">Sportcruiser</option>
+            <option value="DA-42">DA-42</option>
+            <option value="Cessna 172">Cessna 172</option>
+        </select>
+        
+        <select name="tailNumber" id="tail-number" required>
+            <option value="">Select Tail Number</option>
+            ${['638DS', '134PS', '104JA', '156PS', '745DS', '525ST', '410FP', '691PS', '492DS', '22QQ', '457TL', '626Q', '236MA', 'N815DS'].map(t => `<option value="${t}">${t}</option>`).join('')}
+        </select>
+
+        <div class="wb-display">
+            <span>Empty Weight: <span id="empty-w">1767.97</span></span>
+            <span>Arm: <span id="empty-a">99.12</span></span>
+        </div>
+
+        <div class="availability-grid">
+            <input type="number" id="w-front" name="frontSeats" placeholder="Front Seats (lbs)" oninput="calcDispatch()" required>
+            <input type="number" id="w-rear" name="rearSeats" placeholder="Rear Seats (lbs)" oninput="calcDispatch()" required>
+        </div>
+        <div class="availability-grid">
+            <input type="number" id="w-baggage" name="baggage" placeholder="Baggage (lbs)" oninput="calcDispatch()" required>
+            <input type="number" id="w-ext-baggage" name="extBaggage" placeholder="Ext Baggage (lbs)" oninput="calcDispatch()" required>
+        </div>
+        <input type="number" id="w-fuel" name="fuelGal" placeholder="Fuel (Gallons x 6 lbs)" oninput="calcDispatch()" required>
+
+        <div class="results-box">
+            <p>Total Weight: <span id="total-w">1767.97</span> / 2646 lbs</p>
+            <p>Aircraft CG: <span id="total-cg">99.12</span></p>
+            <div class="radio-group" style="margin-top:10px; border:none; padding:0;">
+                <label><input type="checkbox" id="check-weight" disabled> Within Weight</label>
+                <label><input type="checkbox" id="check-cg" disabled> Within CG</label>
             </div>
-            <div class="availability-grid">
-                <input type="number" id="w-front" name="frontSeats" placeholder="Front Seat Lbs" oninput="calcDispatch()" required>
-                <input type="number" id="w-rear" name="rearSeats" placeholder="Rear Seat Lbs" oninput="calcDispatch()" required>
-                <input type="number" id="w-baggage" name="baggage" placeholder="Baggage Lbs" oninput="calcDispatch()" required>
-                <input type="number" id="w-fuel" name="fuelGal" placeholder="Fuel Gal" oninput="calcDispatch()" required>
-            </div>
-            <div class="results-box">
-                <p>Total Weight: <span id="total-w">1767.97</span> / 2646 lbs</p>
-                <p>Aircraft CG: <span id="total-cg">99.12</span></p>
-                <div class="radio-group" style="margin-top:10px; border:none; padding:0;">
-                    <label><input type="checkbox" id="check-weight" disabled> Within Weight</label>
-                    <label><input type="checkbox" id="check-cg" disabled> Within CG</label>
-                </div>
-            </div>
-            <p class="form-label">Performance Data</p>
-            <div class="availability-grid">
-                <input type="number" name="toDist" placeholder="T/O Distance" required>
-                <input type="number" name="ldDist" placeholder="LDG Distance" required>
-            </div>
-            <select name="scope" onchange="toggleXC(this.value)" required>
-                <option value="Local">Local</option>
-                <option value="X-Country">X-Country</option>
-            </select>
-            <div id="xc-container" style="display:none;">
-                <input type="text" name="destAirport" placeholder="Destination Airport">
-                <textarea name="destWeather" placeholder="Destination Weather"></textarea>
-            </div>
-            <div class="availability-grid">
-                <input type="number" name="soulsCount" placeholder="Souls">
-                <input type="date" name="flightDate" required>
-            </div>
-            <button type="submit" class="submit-btn">COMPLETE DISPATCH</button>
-        </form>
-    `),
+        </div>
+
+        <p class="form-label">Performance & Runway</p>
+        <div class="availability-grid">
+            <input type="number" name="toDist" placeholder="Takeoff Dist" required>
+            <input type="number" name="ldDist" placeholder="Landing Dist" required>
+        </div>
+        <div class="availability-grid">
+            <input type="number" name="runwayLength" placeholder="Runway Length" required>
+            <input type="text" name="fuelEndurance" placeholder="Fuel Endurance" required>
+        </div>
+        <div class="availability-grid">
+            <input type="number" name="densityAlt" placeholder="Density Altitude" required>
+            <input type="number" name="to50" placeholder="T/O Over 50ft">
+        </div>
+        <input type="number" name="ld50" placeholder="Landing Over 50ft">
+
+        <div class="radio-group">
+            <label><input type="checkbox" name="certADs" required> I certify I checked Recurring ADs</label>
+            <label><input type="checkbox" name="certSAs" required> I certify I checked Recurrent SAs</label>
+        </div>
+        <textarea name="adsDue" placeholder="Identify any ADs/SAs due within 30 days"></textarea>
+        <textarea name="comments" placeholder="Instructor/Student Comments"></textarea>
+
+        <p class="form-label">Route & Weather</p>
+        <select name="scope" onchange="toggleXC(this.value)" required>
+            <option value="Local">Local</option>
+            <option value="X-Country">X-Country</option>
+        </select>
+        
+        <input type="text" name="depAirport" placeholder="Departure Airport Code" required>
+        <textarea name="depMetar" placeholder="Departure METAR" required></textarea>
+        <textarea name="depTaf" placeholder="Departure TAF" required></textarea>
+        <textarea name="depAirmets" placeholder="Departure AIRMETS/SIGMETS" required></textarea>
+        <textarea name="depNotams" placeholder="Departure NOTAMS/TFRS" required></textarea>
+
+        <div id="xc-container" style="display:none;">
+            <input type="text" name="destAirport" placeholder="Destination Airport Code">
+            <input type="text" name="altAirport" placeholder="Alternate Airport Code">
+            <textarea name="altConditions" placeholder="Alternate Airport Conditions"></textarea>
+            <textarea name="destNotams" placeholder="Destination NOTAMS/TFRS"></textarea>
+        </div>
+
+        <p class="form-label">Souls & Timing</p>
+        <select name="soulsCount" required>
+            <option value="">Number of Souls</option>
+            ${[1,2,3,4,5,6,7,8].map(n => `<option value="${n}">${n}</option>`).join('')}
+        </select>
+        <textarea name="soulsNames" placeholder="Names of Souls" required></textarea>
+
+        <div class="availability-grid">
+            <div style="display:flex; gap:5px;"><input type="number" name="depH" placeholder="Dep H" required><input type="number" name="depM" placeholder="Dep M" required></div>
+            <div style="display:flex; gap:5px;"><input type="number" name="retH" placeholder="Ret H" required><input type="number" name="retM" placeholder="Ret M" required></div>
+        </div>
+        <input type="date" name="flightDate" required>
+        <label><input type="checkbox" name="nextDay"> Next Day Return?</label>
+
+        <p class="form-label">Pilot Information</p>
+        <div class="availability-grid">
+            <input type="text" name="firstName" placeholder="First Name" required>
+            <input type="text" name="lastName" placeholder="Last Name" required>
+        </div>
+        <select name="flightType" required>
+            <option value="Solo">Solo</option>
+            <option value="Dual">Dual</option>
+        </select>
+        <input type="email" name="pilotEmail" placeholder="Your Email" required>
+
+        <div class="radio-group" style="border: 2px solid var(--flt-blue); padding: 15px;">
+            <label>
+                <input type="checkbox" required> 
+                I certify this info is accurate and I had a CFI review it.
+            </label>
+        </div>
+
+        <button type="submit" class="submit-btn">COMPLETE DISPATCH</button>
+    </form>
+`),
     'settings': () => renderForm('Developer Settings', `
         <div class="radio-group" style="border:none; background:transparent; padding:0;">
             <p>Local Database Persistence Management</p>
