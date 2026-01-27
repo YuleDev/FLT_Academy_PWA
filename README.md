@@ -1,6 +1,19 @@
 # FLT Academy Student Portal (PWA)
 **An Internet-Independent Aviation Operations Management Tool**
 
+### 🚀 [Launch FLT Portal](https://yuledev.github.io/FLT_Academy_PWA/Views/HTML/index.html)
+
+---
+
+## 📱 iPad Installation
+For the best experience on an iPad mini, follow these steps to install the portal as a native application:
+1. Open the **[Launch Link](https://yuledev.github.io/FLT_Academy_PWA/Views/HTML/index.html)** in Safari.
+2. Tap the **Share** icon (square with an up arrow).
+3. Scroll down and select **'Add to Home Screen'**.
+4. The portal will now appear on your home screen with a professional icon and will function 100% offline.
+
+---
+
 ## Overview
 This Progressive Web App (PWA) is designed specifically for student pilots and instructors at **FLT Academy**. Recognizing that critical flight operations—such as **Weight & Balance** and **Dispatch**—often occur in low-connectivity environments like hangars or remote ramps at **KBTF** and **KSPK**, this tool ensures 100% operational uptime without a data connection.
 
@@ -18,9 +31,9 @@ This Progressive Web App (PWA) is designed specifically for student pilots and i
 
 ## Aviation Logic
 The portal handles specific aviation workflows:
-1.  **Dispatch**: Validates if the aircraft is within the **6.4.4 Permissible CG Range**.
-2.  **Safety**: Direct ASAP reporting with anonymous submission support.
-3.  **Training**: Automated Stage Check and New Instructor request templates.
+1. **Dispatch**: Validates if the aircraft is within the **6.4.4 Permissible CG Range**.
+2. **Safety**: Direct ASAP reporting with anonymous submission support.
+3. **Training**: Automated Stage Check and New Instructor request templates.
 
 ---
 *Created by Kole Alexander Ervine*
