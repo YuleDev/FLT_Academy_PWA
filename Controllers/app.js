@@ -1,0 +1,431 @@
+/**
+ * FLT ACADEMY STUDENT PORTAL - CORE CONTROLLER
+ * This file manages client-side routing, UI rendering, and the logic for 
+ * aviation-specific tools like Weight & Balance and offline form processing.
+ */
+
+const app = document.getElementById('app');
+
+// ==========================================================
+// 1. NAVIGATION & ROUTING ENGINE
+// ==========================================================
+
+/**
+ * High-performance UI templates stored as literal strings.
+ * Templates are rendered on-demand to maintain "Internet Independence."
+ */
+const routes = {
+    'home': () => `
+        <section class="app-grid">
+            ${renderAppIcon('reimbursement', 'Fuel', 'M18 3c.55 0 1 .45 1 1v9l-2 3V4h-9v16h5v2H6c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h12m0 12.5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5.67-1.5 1.5-1.5M18 19c1.1 0 2 .9 2 2v1h-4v-1c0-1.1.9-2 2-2z')}
+            ${renderAppIcon('asap', 'ASAP', 'M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71L12 2z')}
+            ${renderAppIcon('availability', 'Availability', 'M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zM12.5 7H11v6l5.25 3.15.75-1.23-4.5-2.67z')}
+            ${renderAppIcon('checkride', 'Checkride', 'M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z')}
+            ${renderAppIcon('student-request', 'Students+', 'M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z')}
+            ${renderAppIcon('training-center', 'Transfer', 'M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71L12 2z" transform="rotate(90 12 12)')}
+            ${renderAppIcon('new-instructor', 'Instructor', 'M16 9c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm-2 4c-2.67 0-8 1.34-8 4v3h16v-3c0-2.66-5.33-4-8-4zM9 9c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm3 4c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z')}
+            ${renderAppIcon('stage-check', 'Stage Check', 'M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z')}
+            ${renderAppIcon('dispatch', 'Dispatch', 'M21 16.5C21 16.88 20.79 17.21 20.47 17.38L12.57 21.82C12.41 21.94 12.21 22 12 22C11.79 22 11.59 21.94 11.43 21.82L3.53 17.38C3.21 17.21 3 16.88 3 16.5V7.5C3 7.12 3.21 6.79 3.53 6.62L11.43 2.18C11.59 2.06 11.79 2 12 2C12.21 2 12.41 2.06 12.57 2.18L20.47 6.62C20.79 6.79 21 7.12 21 7.5V16.5Z')}
+            ${renderAppIcon('settings', 'Settings', 'M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z')}
+        </section>
+    `,
+    'reimbursement': () => renderForm('Fuel', `
+        <form id="reimbursement-form" onsubmit="handleForm(event, 'REIMBURSEMENT')">
+            <input type="text" name="studentName" placeholder="Student Name" required>  
+            <input type="email" name="Email" placeholder="Student Email" required>
+            <input type="number" name="gallons" placeholder="Gallons" inputmode="decimal" required>
+            <input type="number" name="cost" placeholder="Total Cost" inputmode="decimal" required>
+            <input type="text" name="location_fueled" placeholder="Location Fueled" required>
+            <input type="text" name="nNumber" placeholder="Aircraft N-Number" required>
+            <select name="reimbursementType" required>
+                <option value="Mailed">Check (Mailed)</option>
+                <option value="In Person">Check (In Person)</option>
+            </select>
+            <p class="form-label">Receipt Photo:</p>
+            <input type="file" id="receipt-photo" accept="image/*" capture="camera">
+            <button type="submit" class="submit-btn">SAVE REIMBURSEMENT</button>
+        </form>
+    `),
+    'asap': () => renderForm('ASAP', `
+        <p style="font-size: 0.85rem; margin-bottom: 15px; color: #666;">Identify for immunity or leave blank for anonymity.</p>
+        <form onsubmit="handleForm(event, 'ASAP')">
+            <input type="text" name="name" placeholder="Name (Optional)">
+            <input type="email" name="email" placeholder="Email (Optional)">
+            <input type="tel" name="Phone" placeholder="Phone Number (Optional)">
+            <textarea name="message" placeholder="Describe the safety concern..." required></textarea>
+            <button type="submit" class="submit-btn">SUBMIT ASAP REPORT</button>
+        </form>
+    `),
+    'availability': () => renderForm('Schedule', `
+        <form onsubmit="handleForm(event, 'AVAILABILITY')">
+            <input type="text" name="studentName" placeholder="Student Name" required>
+            <input type="text" name="instructorName" placeholder="Instructor Name" required>
+            <p class="form-label">Daily Block Times (e.g. 0800-1200):</p>
+            <div class="availability-grid">
+                ${['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'].map(day => 
+                    `<input type="text" name="${day}" placeholder="${day.charAt(0).toUpperCase() + day.slice(1)}">`
+                ).join('')}
+            </div>
+            <button type="submit" class="submit-btn">UPDATE AVAILABILITY</button>
+        </form>
+    `),
+    'checkride': () => renderForm('Checkride', `
+        <form onsubmit="handleForm(event, 'CHECK_REPORT')">
+            <input type="text" name="student" placeholder="Student Name" required>
+            <input type="email" name="studentEmail" placeholder="Student Email" required>
+            <input type="text" name="instructor" placeholder="Instructor Name" required>
+            <p class="form-label">Rating & Aircraft Details:</p>
+            <select name="checkType" required>
+                <option value="Private">Private Pilot</option>
+                <option value="Instrument">Instrument</option>
+                <option value="Commercial">Commercial</option>
+                <option value="CFI">CFI / CFII</option>
+            </select>
+            <select name="airplane" required>
+                <option value="Sport Cruiser">Sport Cruiser</option>
+                <option value="DA-20">DA-20</option>
+                <option value="DA-40">DA-40</option>
+                <option value="DA-42">DA-42</option>
+            </select>
+            <input type="date" name="dateOfCheckride" required>
+            <input type="text" name="examinerName" placeholder="Examiner Name" required>
+            <select name="result" required>
+                <option value="Passed">Passed</option>
+                <option value="Failed">Failed</option>
+                <option value="Discontinued">Discontinued</option>
+            </select>
+            <textarea name="difficultQuestions" placeholder="What questions were difficult?" required></textarea>
+            <textarea name="oralDetails" placeholder="Oral portion details..." required></textarea>
+            <textarea name="flightDetails" placeholder="Flight portion details..." required></textarea>
+            <div class="radio-group">
+                <p>Adequately prepared by FLT?</p>
+                <label><input type="radio" name="prepared" value="Yes" required> Yes</label>
+                <label><input type="radio" name="prepared" value="No"> No</label>
+            </div>
+            <button type="submit" class="submit-btn">SAVE CHECKRIDE REPORT</button>
+        </form>
+    `),
+    'student-request': () => renderForm("Request Add'l Students", `
+        <form onsubmit="handleForm(event, 'STUDENT_REQUEST')">
+            <input type="text" name="instructorName" placeholder="Instructor Name" required>
+            <input type="email" name="instructorEmail" placeholder="Instructor Email" required>
+            <input type="tel" name="instructorPhone" placeholder="Instructor Phone" required>
+            <input type="number" name="instructorWeight" placeholder="Instructor Weight (lbs)" required>
+            <p class="form-label">Full Time Students Requested:</p>
+            <select name="fullTimeCount" required>
+                ${['Zero', 'One', 'Two', 'Three', 'Four'].map(v => `<option value="${v}">${v}</option>`).join('')}
+            </select>
+            <p class="form-label">Part Time Students Requested:</p>
+            <select name="partTimeCount" required>
+                ${['Zero', 'One', 'Two', 'Three', 'Four'].map(v => `<option value="${v}">${v}</option>`).join('')}
+            </select>
+            <p class="form-label">Instructor's Current Location:</p>
+            <select name="location" required>
+                <option value="BTF">BTF (Skypark)</option>
+                <option value="PVU">PVU (Provo)</option>
+                <option value="SPK">Spanish Fork</option>
+            </select>
+            <textarea name="justification" placeholder="Current load, graduation, etc." required></textarea>
+            <button type="submit" class="submit-btn">SUBMIT REQUEST</button>
+        </form>
+    `),
+    'training-center': () => renderForm('Transfer Center', `
+        <form onsubmit="handleForm(event, 'TRANSFER_REQUEST')">
+            <input type="text" name="name" placeholder="Full Name" required>
+            <input type="email" name="email" placeholder="Email Address" required>
+            <p class="form-label">Desired Transfer Location:</p>
+            <select name="targetLocation" required>
+                <option value="Bountiful">Bountiful (Skypark)</option>
+                <option value="Ogden">Ogden</option>
+                <option value="Provo">Provo</option>
+                <option value="French Valley">French Valley - CA</option>
+            </select>
+            <textarea name="message" placeholder="Reason for Transfer" required></textarea>
+            <button type="submit" class="submit-btn">SUBMIT TRANSFER</button>
+        </form>
+    `),
+    'new-instructor': () => renderForm('Request Instructor', `
+        <form onsubmit="handleForm(event, 'INSTRUCTOR_CHANGE')">
+            <input type="text" name="studentName" placeholder="Your Full Name" required>
+            <input type="email" name="studentEmail" placeholder="Your Email" required>
+            <p class="form-label">Current Training Info:</p>
+            <input type="text" name="currentInstructor" placeholder="Current Instructor Name" required>
+            <p class="form-label">Reason for Request:</p>
+            <textarea name="reason" placeholder="Scheduling, teaching style, etc." required></textarea>
+            <p class="form-label">Desired Availability:</p>
+            <textarea name="availability" placeholder="Days/Times available for a new instructor" required></textarea>
+            <button type="submit" class="submit-btn">SUBMIT REQUEST</button>
+        </form>
+    `),
+    'stage-check': () => renderForm('Stage Check', `
+        <form onsubmit="handleForm(event, 'STAGE_CHECK')">
+            <p class="form-label">Student Information</p>
+            <input type="text" name="studentName" placeholder="Student Name" required>
+            <input type="number" name="studentFTN" placeholder="Student FTN" required>
+            <input type="text" name="studentCert" placeholder="Student Pilot Certificate #" required>
+            <input type="tel" name="studentPhone" placeholder="Student Phone" required>
+            <input type="email" name="studentEmail" placeholder="Student Email" required>
+            <input type="number" name="studentWeight" placeholder="Student Weight (lbs)" required>
+            <p class="form-label">Instructor Information</p>
+            <input type="text" name="instructorName" placeholder="Instructor Name" required>
+            <input type="number" name="instructorFTN" placeholder="Instructor FTN" required>
+            <input type="text" name="instructorCert" placeholder="Instructor Certificate #" required>
+            <input type="tel" name="instructorPhone" placeholder="Instructor Phone" required>
+            <input type="email" name="instructorEmail" placeholder="Instructor Email" required>
+            <p class="form-label">Checkride Details</p>
+            <select name="checkType" required>
+                <option value="Private">Private</option>
+                <option value="Instrument">Instrument</option>
+                <option value="Commercial">Commercial</option>
+                <option value="CFI Initial">CFI Initial</option>
+            </select>
+            <select name="aircraft" required>
+                <option value="Sport Cruiser">Sport Cruiser</option>
+                <option value="DA-20">DA-20</option>
+                <option value="DA-40">DA-40</option>
+                <option value="DA-42">DA-42</option>
+            </select>
+            <p class="form-label">Location & Date</p>
+            <select name="location" required>
+                <option value="KBTF">KBTF (Skypark)</option>
+                <option value="KSPK">KSPK (Spanish Fork)</option>
+            </select>
+            <label class="form-label">Date of Stage Check:</label>
+            <input type="date" name="finalStageDate" required>
+            <textarea name="additionalInfo" placeholder="Additional Information"></textarea>
+            <textarea name="availability" placeholder="Schedule Availability" required></textarea>
+            <button type="submit" class="submit-btn">SUBMIT STAGE CHECK</button>
+        </form>
+    `),
+    'dispatch': () => renderForm('Dispatch', `
+        <form onsubmit="handleForm(event, 'DISPATCH')">
+            <p class="form-label">Aircraft Information</p>
+            <select name="aircraft" id="aircraft-type" required onchange="updateAircraftData()">
+                <option value="DA-40">DA-40</option>
+                <option value="DA-20">DA-20</option>
+                <option value="Sport Cruiser">Sport Cruiser</option>
+            </select>
+            <select name="tailNumber" id="tail-number" required>
+                <option value="745DS">745DS</option>
+                <option value="638DS">638DS</option>
+            </select>
+            <div class="wb-display">
+                <p>Empty Weight: <span id="empty-w">1767.97</span> lbs</p>
+                <p>Empty Arm: <span id="empty-a">99.12</span></p>
+            </div>
+            <div class="availability-grid">
+                <input type="number" id="w-front" name="frontSeats" placeholder="Front Seat Lbs" oninput="calcDispatch()" required>
+                <input type="number" id="w-rear" name="rearSeats" placeholder="Rear Seat Lbs" oninput="calcDispatch()" required>
+                <input type="number" id="w-baggage" name="baggage" placeholder="Baggage Lbs" oninput="calcDispatch()" required>
+                <input type="number" id="w-fuel" name="fuelGal" placeholder="Fuel Gal" oninput="calcDispatch()" required>
+            </div>
+            <div class="results-box">
+                <p>Total Weight: <span id="total-w">1767.97</span> / 2646 lbs</p>
+                <p>Aircraft CG: <span id="total-cg">99.12</span></p>
+                <div class="radio-group" style="margin-top:10px; border:none; padding:0;">
+                    <label><input type="checkbox" id="check-weight" disabled> Within Weight</label>
+                    <label><input type="checkbox" id="check-cg" disabled> Within CG</label>
+                </div>
+            </div>
+            <p class="form-label">Performance Data</p>
+            <div class="availability-grid">
+                <input type="number" name="toDist" placeholder="T/O Distance" required>
+                <input type="number" name="ldDist" placeholder="LDG Distance" required>
+            </div>
+            <select name="scope" onchange="toggleXC(this.value)" required>
+                <option value="Local">Local</option>
+                <option value="X-Country">X-Country</option>
+            </select>
+            <div id="xc-container" style="display:none;">
+                <input type="text" name="destAirport" placeholder="Destination Airport">
+                <textarea name="destWeather" placeholder="Destination Weather"></textarea>
+            </div>
+            <div class="availability-grid">
+                <input type="number" name="soulsCount" placeholder="Souls">
+                <input type="date" name="flightDate" required>
+            </div>
+            <button type="submit" class="submit-btn">COMPLETE DISPATCH</button>
+        </form>
+    `),
+    'settings': () => renderForm('Developer Settings', `
+        <div class="radio-group" style="border:none; background:transparent; padding:0;">
+            <p>Local Database Persistence Management</p>
+            <button class="submit-btn" onclick="viewQueue()" style="margin-bottom:15px; background-color:#666;">VIEW SYNC QUEUE</button>
+            <button class="submit-btn" onclick="triggerManualSync()" style="background-color:#28a745;">FORCE BACKGROUND SYNC</button>
+        </div>
+        <div id="queue-display" style="margin-top:20px; font-size:0.9rem; background:#fff; padding:15px; border-radius:12px; display:none; border:1px solid #ccc;"></div>
+    `)
+};
+
+// ==========================================================
+// 2. CORE ROUTING LOGIC
+// ==========================================================
+
+/**
+ * Handles application state transitions.
+ * Utilizes the History API for native "Back" button support.
+ */
+function navigate(route) {
+    const viewFunc = routes[route] || routes['home'];
+    app.innerHTML = viewFunc();
+    window.history.pushState({}, route, `#${route}`);
+}
+
+window.onpopstate = () => {
+    const route = window.location.hash.replace('#', '') || 'home';
+    navigate(route);
+};
+
+// ==========================================================
+// 3. AVIATION CALCULATIONS & UI HELPERS
+// ==========================================================
+
+/**
+ * Real-time Weight & Balance calculator.
+ * Validates aircraft center of gravity against the POH envelope.
+ */
+function calcDispatch() {
+    const emptyW = parseFloat(document.getElementById('empty-w').innerText);
+    const emptyA = parseFloat(document.getElementById('empty-a').innerText);
+    
+    // Pilot Inputs
+    const wFront = parseFloat(document.getElementById('w-front').value) || 0;
+    const wRear = parseFloat(document.getElementById('w-rear').value) || 0;
+    const wBag = parseFloat(document.getElementById('w-baggage').value) || 0;
+    const wFuel = (parseFloat(document.getElementById('w-fuel').value) || 0) * 6; // Standard 100LL weight
+
+    // Standard DA-40 Station Arms
+    const armFront = 90.6;
+    const armRear = 128;
+    const armBag = 153.1;
+    const armFuel = 103.5;
+
+    // Moment Calculations (Weight * Arm = Moment)
+    const totalW = emptyW + wFront + wRear + wBag + wFuel;
+    const totalM = (emptyW * emptyA) + (wFront * armFront) + (wRear * armRear) + (wBag * armBag) + (wFuel * armFuel);
+    const totalCG = totalM / totalW;
+
+    // DOM Updates
+    document.getElementById('total-w').innerText = totalW.toFixed(2);
+    document.getElementById('total-cg').innerText = totalCG.toFixed(2);
+    
+    // Range Validation
+    document.getElementById('check-weight').checked = totalW <= 2646;
+    document.getElementById('check-cg').checked = (totalCG >= 94.5 && totalCG <= 102);
+}
+
+/**
+ * Updates tail numbers and empty weight constants for different aircraft.
+ */
+function updateAircraftData() {
+    const type = document.getElementById('aircraft-type').value;
+    const fleet = {
+        'DA-40': { tails: ['745DS', '638DS'], w: 1767.97, a: 99.12 },
+        'DA-20': { tails: ['N201FL'], w: 1150, a: 90.5 },
+        'Sport Cruiser': { tails: ['N701FL'], w: 850, a: 85.2 }
+    };
+    const data = fleet[type];
+    document.getElementById('tail-number').innerHTML = data.tails.map(t => `<option value="${t}">${t}</option>`).join('');
+    document.getElementById('empty-w').innerText = data.w;
+    document.getElementById('empty-a').innerText = data.a;
+    calcDispatch();
+}
+
+function toggleXC(val) {
+    document.getElementById('xc-container').style.display = (val === 'X-Country') ? 'block' : 'none';
+}
+
+// ==========================================================
+// 4. DATA PERSISTENCE & SYNC
+// ==========================================================
+
+/**
+ * Global form submission interceptor.
+ * Packages data for local IndexedDB persistence during offline periods.
+ */
+async function handleForm(event, type) {
+    event.preventDefault();
+    const formData = Object.fromEntries(new FormData(event.target).entries());
+    
+    // Receipt photo processing for Fuel Reimbursement
+    const photoInput = document.getElementById('receipt-photo');
+    if (photoInput?.files[0]) {
+        formData.photoBase64 = await fileToBase64(photoInput.files[0]);
+    }
+
+    await saveToSyncQueue(type, formData);
+    alert(`Report Stored Offline: ${type}`);
+    navigate('home');
+}
+
+/**
+ * IndexedDB Sync Queue Visualization for Developers.
+ */
+async function viewQueue() {
+    const db = await openDatabase();
+    const records = await new Promise(res => {
+        db.transaction('sync-queue', 'readonly').objectStore('sync-queue').getAll().onsuccess = (e) => res(e.target.result);
+    });
+    const display = document.getElementById('queue-display');
+    display.style.display = 'block';
+    display.innerHTML = records.length > 0 
+        ? records.map(r => `<div><strong>${r.type}</strong>: ${new Date(r.timestamp).toLocaleTimeString()}</div>`).join('')
+        : "No pending records.";
+}
+
+/**
+ * Manually triggers the Background Sync API.
+ */
+async function triggerManualSync() {
+    if ('serviceWorker' in navigator && 'SyncManager' in window) {
+        const reg = await navigator.serviceWorker.ready;
+        await reg.sync.register('sync-flt-forms');
+        alert("Sync registered via Service Worker.");
+    }
+}
+
+// ==========================================================
+// 5. COMPONENT RENDERERS
+// ==========================================================
+
+function renderAppIcon(route, label, path) {
+    return `
+        <div class="icon-wrapper" onclick="navigate('${route}')">
+            <div class="app-icon" style="background: #ffffff;">
+                <svg viewBox="0 0 24 24"><path d="${path}"/></svg>
+            </div>
+            <span class="app-label">${label}</span>
+        </div>`;
+}
+
+function renderForm(title, content) {
+    return `
+        <div class="form-page">
+            <div class="form-header">
+                <button onclick="navigate('home')" class="back-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                    Back
+                </button>
+                <h2 style="margin:0; color:var(--flt-blue);">${title}</h2>
+            </div>
+            ${content}
+        </div>`;
+}
+
+// ==========================================================
+// 6. INITIALIZATION & NETWORK MONITORING
+// ==========================================================
+
+navigate('home');
+
+window.addEventListener('online', () => updateStatus('Online', '0.9', '#ffffff'));
+window.addEventListener('offline', () => updateStatus('Offline - Pending Sync', '1.0', '#ff9999'));
+
+function updateStatus(text, opacity, color) {
+    const status = document.getElementById('connection-status');
+    if (status) {
+        status.innerText = text;
+        status.style.opacity = opacity;
+        status.style.color = color;
+    }
+}
