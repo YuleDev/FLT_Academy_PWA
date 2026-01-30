@@ -9,15 +9,15 @@
   "theme_color": "#003594",
   "icons": [
     {
-      "src": "./Assets/Icons/fltAcademyLogo.ico",
+      "src": "/FLT_Academy_PWA/Assets/Icons/fltAcademyLogo-192.png",
       "sizes": "192x192",
-      "type": "image/ico",
+      "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "./Assets/Icons/fltAcademyLogo.svg",
+      "src": "/FLT_Academy_PWA/Assets/Icons/fltAcademyLogo-512.png",
       "sizes": "512x512",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]

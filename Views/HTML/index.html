@@ -10,8 +10,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="FLT Portal" />
 
-  <!-- ONE stylesheet, versioned -->
-  <link rel="stylesheet" href="/FLT_Academy_PWA/Views/CSS/style.css?v=v4" />
+  <link rel="stylesheet" href="/FLT_Academy_PWA/Views/CSS/style.css?v=2026-01-30-1">
 </head>
 
 <body>
@@ -24,21 +23,49 @@
     <main id="app"></main>
   </div>
 
-  <!-- ONE models.js, versioned -->
-  <script src="/FLT_Academy_PWA/Models/models.js?v=v4"></script>
+  <script src="/FLT_Academy_PWA/Models/models.js?v=2026-01-30-1"></script>
+  <script src="/FLT_Academy_PWA/Controllers/app.js?v=2026-01-30-1"></script>
 
-  <!-- ONE app.js, versioned -->
-  <script src="/FLT_Academy_PWA/Controllers/app.js?v=v4"></script>
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", async () => {
+      try {
+        const reg = await navigator.serviceWorker.register(
+          "/FLT_Academy_PWA/sw.js?v=2026-01-30-1"
+        );
 
-  <script>
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker
-          .register("/FLT_Academy_PWA/Views/HTML/sw.js?v=v4")
-          .then((reg) => console.log("SW scope:", reg.scope))
-          .catch((err) => console.error("SW registration failed:", err));
-      });
-    }
-  </script>
+        // Ask the browser to check for an updated SW right now
+        reg.update();
+
+        // If there’s already a waiting SW, activate it immediately
+        if (reg.waiting) {
+          reg.waiting.postMessage({ type: "SKIP_WAITING" });
+        }
+
+        reg.addEventListener("updatefound", () => {
+          const newWorker = reg.installing;
+          if (!newWorker) return;
+
+          newWorker.addEventListener("statechange", () => {
+            // When the new SW is installed, tell it to activate immediately
+            if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+              newWorker.postMessage({ type: "SKIP_WAITING" });
+            }
+          });
+        });
+
+        // When the SW takes over, reload so the new assets are used immediately
+        let reloaded = false;
+        navigator.serviceWorker.addEventListener("controllerchange", () => {
+          if (reloaded) return;
+          reloaded = true;
+          window.location.reload();
+        });
+      } catch (err) {
+        console.error("SW registration failed:", err);
+      }
+    });
+  }
+</script>
 </body>
 </html>
