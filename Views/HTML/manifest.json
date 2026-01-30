@@ -2,7 +2,7 @@
   "name": "FLT Academy Student Portal",
   "short_name": "FLT Portal",
   "description": "Offline-capable student and instructor portal for flight operations and dispatch.",
-  "start_url": "./Views/HTML/index.html",
+  "start_url": "/FLT_Academy_PWA/Views/HTML/index.html",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#2c2c2e",
