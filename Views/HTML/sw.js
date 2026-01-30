@@ -7,7 +7,7 @@
  * 3. Managing Background Sync for IndexedDB form persistence.
  */
 
-const CACHE_NAME = 'flt-portal-v1';
+const CACHE_NAME = 'flt-portal-v2';
 
 // Assets required for the application to function without a data connection
 const ASSETS_TO_CACHE = [
