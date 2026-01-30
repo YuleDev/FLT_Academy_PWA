@@ -7,7 +7,7 @@
  * 3. Managing Background Sync for IndexedDB form persistence.
  */
 
-const CACHE_NAME = 'flt-portal-v3';
+const CACHE_NAME = 'flt-portal-v4';
 
 // Assets required for the application to function without a data connection
 const ASSETS_TO_CACHE = [
@@ -37,14 +37,13 @@ self.addEventListener('install', (event) => {
  * ACTIVATE EVENT
  * Performs cleanup of legacy cache versions to manage device storage efficiently.
  */
+
 self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
-      );
-    })
-  );
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)));
+    await self.clients.claim();
+  })());
 });
 
 /**

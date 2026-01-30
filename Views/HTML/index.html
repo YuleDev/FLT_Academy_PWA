@@ -1,38 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>FLT Academy Portal</title>
-    
-    <link rel="manifest" href="./manifest.json">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="FLT Portal">
-    
-    <link rel="stylesheet" href="../CSS/style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>FLT Academy Portal</title>
+
+  <link rel="manifest" href="/FLT_Academy_PWA/Views/HTML/manifest.json?v=v4" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="FLT Portal" />
+
+  <!-- ONE stylesheet, versioned -->
+  <link rel="stylesheet" href="/FLT_Academy_PWA/Views/CSS/style.css?v=v4" />
 </head>
+
 <body>
-    <div class="app-wrapper">
-        <header>
-            <h1>FLT Portal</h1>
-            <div id="connection-status">Online</div>
-        </header>
+  <div class="app-wrapper">
+    <header>
+      <h1>FLT Portal</h1>
+      <div id="connection-status">Online</div>
+    </header>
 
-        <main id="app"></main>
-    </div>
+    <main id="app"></main>
+  </div>
 
-    <script src="../../Models/models.js"></script>
-    <script src="../../Controllers/app.js"></script>
+  <!-- ONE models.js, versioned -->
+  <script src="/FLT_Academy_PWA/Models/models.js?v=v4"></script>
 
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log("FLT Service Worker: Registered Scope:", reg.scope))
-                    .catch(err => console.error("FLT Service Worker: Registration Failed:", err));
-            });
-        }
-    </script>
+  <!-- ONE app.js, versioned -->
+  <script src="/FLT_Academy_PWA/Controllers/app.js?v=v4"></script>
+
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker
+          .register("/FLT_Academy_PWA/Views/HTML/sw.js?v=v4")
+          .then((reg) => console.log("SW scope:", reg.scope))
+          .catch((err) => console.error("SW registration failed:", err));
+      });
+    }
+  </script>
 </body>
 </html>
