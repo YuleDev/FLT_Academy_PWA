@@ -313,14 +313,32 @@ const routes = {
         <button type="submit" class="submit-btn">COMPLETE DISPATCH</button>
     </form>
 `),
-    'settings': () => renderForm('Developer Settings', `
-        <div class="radio-group" style="border:none; background:transparent; padding:0;">
-            <p>Local Database Persistence Management</p>
-            <button class="submit-btn" onclick="viewQueue()" style="margin-bottom:15px; background-color:#666;">VIEW SYNC QUEUE</button>
-            <button class="submit-btn" onclick="triggerManualSync()" style="background-color:#28a745;">FORCE BACKGROUND SYNC</button>
+    'settings': () => renderForm('System Settings', `
+    <div class="radio-group" style="border:none; background:transparent; padding:0;">
+        <p class="form-label">Display Preferences</p>
+        <button class="submit-btn" onclick="toggleNightMode()" style="background-color:#660000; margin-bottom:30px;">
+            TOGGLE NIGHT VISION (RED)
+        </button>
+
+        <p class="form-label">Offline Access</p>
+        <button class="submit-btn" onclick="toggleInstallGuide()" style="background-color:var(--flt-blue); margin-bottom:15px;">
+            INSTALL TO IPAD HOME SCREEN
+        </button>
+        
+        <div id="install-guide" style="display:none; background:#fff; color:#333; padding:15px; border-radius:12px; border:2px solid var(--flt-blue); margin-bottom:30px; font-size:0.9rem;">
+            <strong style="display:block; margin-bottom:8px;">iPad Installation Steps:</strong>
+            1. Tap the <strong>Share</strong> icon (square with arrow) at the top of Safari.<br>
+            2. Scroll down and tap <strong>'Add to Home Screen'</strong>.<br>
+            3. Tap <strong>'Add'</strong> in the top right corner.<br><br>
+            <em>The app will now work 100% offline from your home screen.</em>
         </div>
-        <div id="queue-display" style="margin-top:20px; font-size:0.9rem; background:#fff; padding:15px; border-radius:12px; display:none; border:1px solid #ccc;"></div>
-    `)
+
+        <p class="form-label">Local Database Management</p>
+        <button class="submit-btn" onclick="viewQueue()" style="margin-bottom:15px; background-color:#666;">VIEW SYNC QUEUE</button>
+        <button class="submit-btn" onclick="triggerManualSync()" style="background-color:#28a745;">FORCE BACKGROUND SYNC</button>
+    </div>
+    <div id="queue-display" style="margin-top:20px; font-size:0.9rem; background:#fff; padding:15px; border-radius:12px; display:none; border:1px solid #ccc;"></div>
+`)
 };
 
 // ==========================================================
@@ -331,6 +349,7 @@ const routes = {
  * Handles application state transitions.
  * Utilizes the History API for native "Back" button support.
  */
+
 function navigate(route) {
     const viewFunc = routes[route] || routes['home'];
     app.innerHTML = viewFunc();
@@ -383,14 +402,18 @@ function calcDispatch() {
 /**
  * Updates tail numbers and empty weight constants for different aircraft.
  */
+
 function updateAircraftData() {
     const type = document.getElementById('aircraft-type').value;
     const fleet = {
-        'DA-40': { tails: ['745DS', '638DS'], w: 1767.97, a: 99.12 },
+        'DA-40': { tails: ['745DS', '638DS', '134PS', '156PS'], w: 1767.97, a: 99.12 },
         'DA-20': { tails: ['N201FL'], w: 1150, a: 90.5 },
-        'Sport Cruiser': { tails: ['N701FL'], w: 850, a: 85.2 }
+        'Sportcruiser': { tails: ['N701FL'], w: 850, a: 85.2 },
+        'DA-42': { tails: ['N420FL'], w: 2800.00, a: 95.50 }, // Placeholder POC Data
+        'Cessna 172': { tails: ['N172FL'], w: 1650.00, a: 40.50 } // Placeholder POC Data
     };
-    const data = fleet[type];
+    
+    const data = fleet[type] || fleet['DA-40']; // Fallback to DA-40
     document.getElementById('tail-number').innerHTML = data.tails.map(t => `<option value="${t}">${t}</option>`).join('');
     document.getElementById('empty-w').innerText = data.w;
     document.getElementById('empty-a').innerText = data.a;
@@ -420,7 +443,9 @@ async function handleForm(event, type) {
     }
 
     await saveToSyncQueue(type, formData);
-    alert(`Report Stored Offline: ${type}`);
+    // alert(`Report Stored Offline: ${type}`);
+    // Updated for POC
+    showToast(`Saved Offline: ${type} Report`, 'warning');
     navigate('home');
 }
 
@@ -442,11 +467,53 @@ async function viewQueue() {
 /**
  * Manually triggers the Background Sync API.
  */
+
 async function triggerManualSync() {
-    if ('serviceWorker' in navigator && 'SyncManager' in window) {
-        const reg = await navigator.serviceWorker.ready;
-        await reg.sync.register('sync-flt-forms');
-        alert("Sync registered via Service Worker.");
+    const status = document.getElementById('connection-status').innerText;
+    
+    if (status.includes('Offline')) {
+        await showToast("Device Offline: Connect to Wi-Fi to sync", "warning");
+        return;
+    }
+
+    const db = await openDatabase();
+    const records = await new Promise(res => {
+        db.transaction('sync-queue', 'readonly').objectStore('sync-queue').getAll().onsuccess = (e) => res(e.target.result);
+    });
+
+    if (records.length === 0) {
+        await showToast("No reports pending sync", "info");
+        return;
+    }
+
+    // 1. Show the syncing message and WAIT for it to finish/disappear
+    await showToast(`Syncing ${records.length} reports to Dispatch...`, "info");
+
+    // 2. Process and clear the queue properly with transactions
+    for (const record of records) {
+        console.log(`FLT Sync: Uploading ${record.type} Report...`, record.data);
+        await new Promise((resolve) => {
+            const tx = db.transaction('sync-queue', 'readwrite');
+            tx.objectStore('sync-queue').delete(record.id).onsuccess = () => resolve();
+        });
+    }
+
+    // 3. Show success directly (don’t rely on BroadcastChannel)
+    await showToast(`Sync Complete: ${records.length} reports sent to Dispatch`, 'success');
+
+    // Optional: still broadcast for SW/other tabs if supported
+    if (typeof BroadcastChannel !== 'undefined') {
+    console.log('BC supported?', typeof BroadcastChannel !== 'undefined');
+    syncChannel?.postMessage({ type: 'SYNC_COMPLETE', count: records.length });
+    }
+
+    if (window.location.hash === '#settings') {
+    viewQueue();
+    }
+
+
+    if (window.location.hash === '#settings') {
+        viewQueue();
     }
 }
 
@@ -494,4 +561,89 @@ function updateStatus(text, opacity, color) {
         status.style.opacity = opacity;
         status.style.color = color;
     }
+}
+
+// ==========================================================
+// 7. THEME TOGGLING
+// ==========================================================
+
+// Function to toggle theme
+function toggleNightMode() {
+    document.body.classList.toggle('night-mode');
+    const isNight = document.body.classList.contains('night-mode');
+    localStorage.setItem('flt-theme', isNight ? 'night' : 'day');
+}
+
+// Check for saved theme on startup
+if (localStorage.getItem('flt-theme') === 'night') {
+    document.body.classList.add('night-mode');
+}
+
+// ==========================================================
+// 8. PWA INSTALLATION INSTRUCTIONS
+// ==========================================================
+
+function toggleInstallGuide() {
+    const guide = document.getElementById('install-guide');
+    guide.style.display = (guide.style.display === 'none') ? 'block' : 'none';
+}
+
+// ==========================================================
+// 9. NOTIFICATIONS & ALERTS
+// ==========================================================
+
+/**
+ * UI NOTIFICATION SYSTEM
+ * Displays a brief message to the pilot to confirm background tasks.
+ */
+
+const syncChannel =
+  (typeof BroadcastChannel !== 'undefined')
+    ? new BroadcastChannel('flt-sync-notifications')
+    : null;
+
+syncChannel.onmessage = (event) => {
+    if (event.data.type === 'SYNC_COMPLETE') {
+        showToast(`Sync Complete: ${event.data.count} reports sent to Dispatch`, 'success');
+        
+        // If the user is currently looking at the settings/queue, refresh it
+        if (window.location.hash === '#settings') {
+            viewQueue();
+        }
+    }
+};
+
+/**
+ * UI NOTIFICATION SYSTEM - PROMISE BASED
+ * Allows me to chain messages so they don't overlap.
+ */
+function showToast(message, type = 'info') {
+    return new Promise((resolve) => {
+        let container = document.getElementById('toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'toast-container';
+            document.body.appendChild(container);
+        }
+
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <path d="M20 6L9 17l-5-5" />
+            </svg>
+            <span>${message}</span>
+        `;
+
+        container.appendChild(toast);
+
+        // Remove after 3 seconds and then resolve the promise
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => {
+                toast.remove();
+                resolve(); // This tells the next toast it's okay to start
+            }, 500);
+        }, 3000);
+    });
 }

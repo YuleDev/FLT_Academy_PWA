@@ -11,10 +11,10 @@ const CACHE_NAME = 'flt-portal-v1';
 
 // Assets required for the application to function without a data connection
 const ASSETS_TO_CACHE = [
-  './Views/HTML/index.html',
-  './Views/CSS/style.css',
-  './Controllers/app.js',
-  './Models/models.js',
+  './index.html',
+  '../CSS/style.css',
+  '../../Controllers/app.js',
+  '../../Models/models.js',
   './manifest.json'
 ];
 
@@ -76,10 +76,11 @@ self.addEventListener('sync', (event) => {
  * Connects to IndexedDB, retrieves pending reports, and simulates transmission.
  * In production, this replaces console.log with an authenticated fetch() request.
  */
+
+const syncChannel = new BroadcastChannel('flt-sync-notifications');
+
 async function processSyncQueue() {
     console.log('FLT SW: Background Sync Initialized');
-    
-    // Direct access to IndexedDB from the worker thread
     const dbRequest = indexedDB.open('FLT_Academy_DB', 1);
 
     dbRequest.onsuccess = async (event) => {
@@ -90,19 +91,18 @@ async function processSyncQueue() {
 
         allRecords.onsuccess = async () => {
             const records = allRecords.result;
-            
+            if (records.length === 0) return;
+
             for (const record of records) {
-                try {
-                    // Log the sync attempt for the Developer Settings view
-                    console.log(`FLT SW: Syncing ${record.type} (Timestamp: ${record.timestamp})`, record.data);
-                    
-                    // Transactional integrity: Only delete from local DB if sync is successful
-                    const deleteTx = db.transaction('sync-queue', 'readwrite');
-                    deleteTx.objectStore('sync-queue').delete(record.id);
-                } catch (err) {
-                    console.error('FLT SW: Sync failed for record ID:', record.id, err);
-                }
+                // Simulate successful transmission
+                db.transaction('sync-queue', 'readwrite').objectStore('sync-queue').delete(record.id);
             }
+
+            // The "Magic" Bridge: Tell the UI we finished
+            syncChannel.postMessage({ 
+                type: 'SYNC_COMPLETE', 
+                count: records.length 
+            });
         };
     };
 }

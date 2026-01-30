@@ -25,6 +25,11 @@
     --pr: env(safe-area-inset-right, 15px);
 }
 
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
 /* ==========================================================
    2. GLOBAL RESET & CORE LAYOUT
    ========================================================== */
@@ -40,6 +45,7 @@ html, body {
     overflow-x: hidden; /* Strict horizontal containment for mobile */
     background-color: var(--flt-gray);
     font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    user-select: none; /* Prevents accidental text selection on touch */
 }
 
 .app-wrapper {
@@ -53,6 +59,7 @@ html, body {
 /* ==========================================================
    3. NAVIGATION COMPONENTS
    ========================================================== */
+
 header {
     background-color: var(--flt-blue);
     color: var(--flt-white);
@@ -96,6 +103,7 @@ header h1 {
 /* ==========================================================
    4. IPAD HOME SCREEN GRID (DASHBOARD)
    ========================================================== */
+
 .app-grid {
     display: grid;
     /* Responsive grid: fits as many 120px icons as possible per row */
@@ -193,4 +201,100 @@ input, select, textarea {
     justify-content: space-between;
     font-size: 0.85rem;
     color: #666;
+}
+
+/* ==========================================================
+   6. NIGHT MODE STYLES
+   ========================================================== */
+
+body.night-mode {
+    background-color: #000 !important;
+}
+
+body.night-mode .app-wrapper {
+    background: #000 !important;
+}
+
+body.night-mode .form-page, 
+body.night-mode input, 
+body.night-mode select, 
+body.night-mode textarea,
+body.night-mode .results-box,
+body.night-mode #install-guide {
+    background-color: #1a0000 !important;
+    color: #ff4444 !important;
+    border-color: #440000 !important;
+}
+
+body.night-mode .app-label,
+body.night-mode .form-label,
+body.night-mode h2 {
+    color: #ff4444 !important;
+}
+
+body.night-mode .submit-btn {
+    background-color: #660000 !important;
+    box-shadow: 0 4px 15px rgba(255, 0, 0, 0.2);
+}
+
+/* Ensure icons turn red in Night Mode */
+body.night-mode .app-icon {
+    background: #110000 !important;
+}
+
+body.night-mode .app-icon svg {
+    fill: #ff4444 !important;
+}
+
+/* Fix: Explicitly turn the header dark red in Night Mode */
+body.night-mode header {
+    background-color: #330000 !important;
+    border-bottom: 1px solid #660000;
+}
+
+body.night-mode #connection-status {
+    color: #ff4444 !important;
+}
+
+/* Fix: Ensure the Back Button is readable in Night Mode */
+body.night-mode .back-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ff4444 !important;
+}
+
+/* ==========================================================
+   7. NOTIFICATION
+   ========================================================== */
+
+   /* Toast Notification Styling */
+#toast-container {
+    position: fixed;
+    top: 80px; /* Sits below the header */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    width: 90%;
+    max-width: 400px;
+}
+
+.toast {
+    background-color: var(--flt-blue);
+    color: white;
+    padding: 16px 20px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: slideIn 0.3s ease-out;
+}
+
+.toast.success { background-color: #28a745; }
+.toast.warning { background-color: #f39c12; }
+
+@keyframes slideIn {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
 }
