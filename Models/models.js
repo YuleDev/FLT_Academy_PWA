@@ -39,6 +39,7 @@ function openDatabase() {
  * * @param {string} type - The report category (e.g., 'DISPATCH', 'STAGE_CHECK')
  * @param {Object} formData - Key-value pairs of the submitted form
  */
+
 async function saveToSyncQueue(type, formData) {
     try {
         const db = await openDatabase();
@@ -51,11 +52,17 @@ async function saveToSyncQueue(type, formData) {
             timestamp: Date.now() // Track submission time for chronological syncing
         };
 
-        return new Promise((resolve, reject) => {
+        await new Promise((resolve, reject) => {
             const request = store.add(record);
             request.onsuccess = () => resolve();
             request.onerror = () => reject(request.error);
         });
+
+        if ('serviceWorker' in navigator && 'SyncManager' in window) {
+            const registration = await navigator.serviceWorker.ready;
+            await registration.sync.register('flt-sync-queue');
+        }
+
     } catch (error) {
         console.error("Critical Data Error: Failed to save to local queue.", error);
         throw error;
@@ -67,6 +74,7 @@ async function saveToSyncQueue(type, formData) {
  * Converts raw File objects from the camera or library into Base64 strings.
  * This allows binary image data to be stored as simple text within IndexedDB.
  */
+
 function fileToBase64(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();

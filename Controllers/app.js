@@ -602,16 +602,18 @@ const syncChannel =
     ? new BroadcastChannel('flt-sync-notifications')
     : null;
 
-syncChannel.onmessage = (event) => {
-    if (event.data.type === 'SYNC_COMPLETE') {
-        showToast(`Sync Complete: ${event.data.count} reports sent to Dispatch`, 'success');
-        
-        // If the user is currently looking at the settings/queue, refresh it
-        if (window.location.hash === '#settings') {
-            viewQueue();
+if (syncChannel) {
+    syncChannel.onmessage = (event) => {
+        if (event.data.type === 'SYNC_COMPLETE') {
+            // A more descriptive "Aviation-style" success message
+            showToast(`RECON: Connection Restored. Reports Uploaded to Dispatch.`, 'success');
+            
+            if (window.location.hash === '#settings') {
+                viewQueue();
+            }
         }
-    }
-};
+    };
+}
 
 /**
  * UI NOTIFICATION SYSTEM - PROMISE BASED

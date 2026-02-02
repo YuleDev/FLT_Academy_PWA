@@ -6,17 +6,17 @@
  * - Auto-activate new SW and auto-reload clients (no manual cache clears)
  */
 
-const VERSION = "2026-01-30-1";
+const VERSION = "2026-02-02-1";
 const PRECACHE = `flt-precache-${VERSION}`;
 const RUNTIME = "flt-runtime";
 
 // App shell (relative to the SW scope: /Views/HTML/)
 const PRECACHE_URLS = [
-  "/FLT_Academy_PWA/Views/HTML/index.html?v=2026-01-30-1",
-  "/FLT_Academy_PWA/Views/CSS/style.css?v=2026-01-30-1",
-  "/FLT_Academy_PWA/Controllers/app.js?v=2026-01-30-1",
-  "/FLT_Academy_PWA/Models/models.js?v=2026-01-30-1",
-  "/FLT_Academy_PWA/Views/HTML/manifest.json?v=2026-01-30-1"
+  `/FLT_Academy_PWA/Views/HTML/index.html?v=${VERSION}`,
+  `/FLT_Academy_PWA/Views/CSS/style.css?v=${VERSION}`,
+  `/FLT_Academy_PWA/Controllers/app.js?v=${VERSION}`,
+  `/FLT_Academy_PWA/Models/models.js?v=${VERSION}`,
+  `/FLT_Academy_PWA/Views/HTML/manifest.json?v=${VERSION}`
 ];
 
 
@@ -118,3 +118,26 @@ self.addEventListener("fetch", (event) => {
   // 3) Cross-origin: just go to the network (don’t cache)
   event.respondWith(fetch(req));
 });
+
+// Listen for the 'sync' event (fired when internet returns)
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'flt-sync-queue') {
+    event.waitUntil(simulateBackgroundSync());
+  }
+});
+
+async function simulateBackgroundSync() {
+  // Use a BroadcastChannel to talk to the UI (app.js)
+  const syncChannel = new BroadcastChannel('flt-sync-notifications');
+  
+  // This is where you would normally fetch your IndexedDB data 
+  // and send it to a server. For your MVP demo, we wait 2 seconds 
+  // to make it look like a real upload is happening.
+  await new Promise(resolve => setTimeout(resolve, 2000));
+
+  // Tell app.js that the sync is finished
+  syncChannel.postMessage({ 
+    type: 'SYNC_COMPLETE', 
+    count: "Pending" // You can enhance this to count real records later
+  });
+}

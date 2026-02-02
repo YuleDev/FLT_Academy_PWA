@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>FLT Academy Portal</title>
 
-  <link rel="manifest" href="/FLT_Academy_PWA/Views/HTML/manifest.json?v=v4" />
+  <link rel="manifest" href="/FLT_Academy_PWA/Views/HTML/manifest.json?v=2026-02-02-1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="FLT Portal" />
 
-  <link rel="stylesheet" href="/FLT_Academy_PWA/Views/CSS/style.css?v=2026-01-30-1">
+  <link rel="stylesheet" href="/FLT_Academy_PWA/Views/CSS/style.css?v=2026-02-02-1">
 </head>
 
 <body>
@@ -23,15 +23,15 @@
     <main id="app"></main>
   </div>
 
-  <script src="/FLT_Academy_PWA/Models/models.js?v=2026-01-30-1"></script>
-  <script src="/FLT_Academy_PWA/Controllers/app.js?v=2026-01-30-1"></script>
+  <script src="/FLT_Academy_PWA/Models/models.js?v=2026-02-02-1"></script>
+  <script src="/FLT_Academy_PWA/Controllers/app.js?v=2026-02-02-1"></script>
 
 <script>
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", async () => {
       try {
         const reg = await navigator.serviceWorker.register(
-          "/FLT_Academy_PWA/sw.js?v=2026-01-30-1"
+          "/FLT_Academy_PWA/sw.js?v=2026-02-02-1"
         );
 
         // Ask the browser to check for an updated SW right now
